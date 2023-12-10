@@ -27,6 +27,11 @@ def create_label(
 
 if __name__ == '__main__':
     pygame.init()
+    pygame.display.set_caption("The world of chemistry: Great Invention")
+    
+    programIcon = pygame.image.load(f'{os.getcwd()}/assets/chemistry.png')
+    pygame.display.set_icon(programIcon)
+    
     size = width, height = 720, 500
     screen = pygame.display.set_mode(size)
     running = True

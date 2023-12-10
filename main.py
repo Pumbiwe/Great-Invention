@@ -36,6 +36,7 @@ if __name__ == '__main__':
                 running = False
     
         screen.fill(VERY_DARK_BG)
-        create_label(text="Hello world!", coordinates=(width // 2, height // 2))
+        create_label(text="Here is the name of the game...", coordinates=(width // 2, height // 2))
+        create_label(text="Why am I doing it???", coordinates=(width // 2, height // 2 + 22), font_size=12, text_color=GREY)
         pygame.display.flip()
 

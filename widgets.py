@@ -3,7 +3,7 @@ from colors import *
 import os
 
 
-class Text:
+class PygameText:
     def __init__(
         self,
         screen,
@@ -26,7 +26,7 @@ class Text:
         self.screen.blit(self.text, self.text_rect)
         
 
-class Button:
+class PygameButton:
     def __init__(
             self,
             screen,
@@ -88,7 +88,7 @@ class Button:
         except:
             ...
         coord = list(self.coordinates[:2])
-        self.label = Text(
+        self.label = PygameText(
             self.screen, 
             text=self.text, 
             coordinates=coord, 
@@ -97,3 +97,24 @@ class Button:
         )
         
         del coord
+
+
+class PygameImage:
+    def __init__(
+        self,
+        screen,
+        name="chemistry.png",
+        coordinates=(0, 0),
+        image_size=64
+    ) -> None:
+        fullname = os.path.join('assets', name)
+        if not os.path.isfile(fullname):
+            return
+        self.screen = screen
+        self.image_size = image_size
+        self.coordinates = coordinates
+        self.image = pygame.transform.scale(pygame.image.load(fullname), (image_size, image_size))
+        self.update()
+        
+    def update(self):
+        self.screen.blit(self.image, [int(i) - self.image_size // 2 for i in self.coordinates])

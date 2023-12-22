@@ -36,10 +36,14 @@ class Button:
             border_color=GREY,
             text_color=VERY_DARK_BG,
             font_size=24,
+            border_radius=3,
+            border_size=3,
             on_clicked=None
         ):
         if not on_clicked:
             on_clicked = self.on_clicked
+        self.border_radius = border_radius
+        self.border_size = border_size
         self.on_clicked = on_clicked
         self.text_color = text_color
         self.border_color = border_color
@@ -48,7 +52,6 @@ class Button:
         self.text = text
         self.font_size = font_size
         self.background_color = background_color
-        self.is_hovered = False
         self.update()
     
     def pressed(self, mouse_position):
@@ -70,12 +73,12 @@ class Button:
         pygame.draw.rect(
             self.screen, 
             self.background_color, 
-            pygame.Rect(coord), 100, 3
+            pygame.Rect(coord), 25, self.border_radius
         )
         pygame.draw.rect(
             self.screen, 
-            self.border_color if not self.is_hovered else self.hover_color,
-            pygame.Rect(coord), 2, 3
+            self.border_color,
+            pygame.Rect(coord), self.border_size, self.border_radius
         )
         self.update_label()
     

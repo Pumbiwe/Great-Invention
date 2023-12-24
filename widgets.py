@@ -32,7 +32,7 @@ class PygameButton:
             screen,
             text="Default",
             background_color=LIGHT,
-            coordinates=(0, 0),
+            coordinates: tuple[int, int, int, int]=(100, 100, 100, 50),
             border_color=GREY,
             text_color=VERY_DARK_BG,
             font_size=24,
@@ -41,7 +41,7 @@ class PygameButton:
             on_clicked=None
         ):
         if not on_clicked:
-            on_clicked = self.on_clicked
+            on_clicked = self.on_click
         self.border_radius = border_radius
         self.border_size = border_size
         self.on_clicked = on_clicked
@@ -62,8 +62,8 @@ class PygameButton:
             mouse_position[1] <= self.coordinates[1] + self.coordinates[3] // 2
         ]):
             self.on_clicked()
-    
-    def on_clicked(self):
+
+    def on_click(self):
         print('CLICKED')
     
     def update(self):
@@ -73,12 +73,15 @@ class PygameButton:
         pygame.draw.rect(
             self.screen, 
             self.background_color, 
-            pygame.Rect(coord), 25, self.border_radius
+            pygame.Rect(coord), 
+            border_radius=self.border_radius
         )
         pygame.draw.rect(
             self.screen, 
             self.border_color,
-            pygame.Rect(coord), self.border_size, self.border_radius
+            pygame.Rect(coord), 
+            self.border_size, 
+            border_radius=self.border_radius
         )
         self.update_label()
     
@@ -118,3 +121,6 @@ class PygameImage:
         
     def update(self):
         self.screen.blit(self.image, [int(i) - self.image_size // 2 for i in self.coordinates])
+
+class PygameImageButton(PygameImage):
+    ...

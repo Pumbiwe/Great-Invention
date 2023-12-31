@@ -1,5 +1,7 @@
-import pygame
 import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+
+import pygame
 from colors import *
 from widgets import *
 from PIL import Image 
@@ -100,6 +102,8 @@ if __name__ == '__main__':
                 try:
                     for button in game.buttons:
                         button.pressed(event.pos)
+                    for lvl in game.levels:
+                        lvl.pressed(event.pos)
                 except Exception as e:
                     ...
         

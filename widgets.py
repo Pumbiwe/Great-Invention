@@ -108,7 +108,8 @@ class PygameImage:
         screen,
         name="chemistry.png",
         coordinates=(0, 0),
-        image_size=64
+        image_size=64,
+        opacity=255
     ) -> None:
         fullname = os.path.join('assets', name)
         if not os.path.isfile(fullname):
@@ -117,10 +118,25 @@ class PygameImage:
         self.image_size = image_size
         self.coordinates = coordinates
         self.image = pygame.transform.scale(pygame.image.load(fullname), (image_size, image_size))
+        self.image.set_alpha(opacity)
         self.update()
         
     def update(self):
         self.screen.blit(self.image, [int(i) - self.image_size // 2 for i in self.coordinates])
 
 class PygameImageButton(PygameImage):
-    ...
+    def __init__(self, *args, **kwargs) -> None:
+        super().__init__(*args, **kwargs)
+        self.on_clicked = self.on_click
+    
+    def pressed(self, mouse_position):
+        if all([
+            mouse_position[0] >= self.coordinates[0] - self.image_size // 2,
+            mouse_position[0] <= self.coordinates[0] + self.image_size // 2,
+            mouse_position[1] >= self.coordinates[1] - self.image_size // 2,
+            mouse_position[1] <= self.coordinates[1] + self.image_size // 2
+        ]):
+            self.on_clicked()
+    
+    def on_click(self):
+        ...

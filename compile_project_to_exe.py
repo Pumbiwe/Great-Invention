@@ -1,6 +1,7 @@
 import os
 import shutil
 
+
 os.system(
     "pyinstaller -i assets/chemistry.png --onefile --noconfirm --noconsole main.py"
 )

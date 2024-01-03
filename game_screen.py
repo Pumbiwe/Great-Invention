@@ -1,10 +1,33 @@
 import pygame
 from colors import *
-import time
 from widgets import *
+from sql_manager import Database
+from tkinter import messagebox
 
-def show_level(lvl):
-    print(f"Level {lvl}")
+
+def load_level(lvl, db, screen, menu, main_obj):
+    lvl_id, summand_1, summand_2, result = db.query('SELECT * FROM levels WHERE id = {}'.format(lvl))[0]
+    main_obj.buttons.clear()
+    main_obj.levels.clear()
+    
+    game = Game(
+        screen,
+        db.get_element(summand_1),
+        db.get_element(summand_2),
+        db.get_element(result),
+        menu,
+        main_obj
+    )
+
+
+def show_level(*args):
+    lvl, screen, menu, main_obj = args[0]
+    db = Database()
+    if lvl in db.get_levels():
+        load_level(lvl, db, screen, menu, main_obj)
+    else:
+        messagebox.showerror("Ошибка", "Уровень еще не создан или не найден.")
+    del db
 
 class GameScreen:
     def __init__(self, screen: pygame.Surface, menu) -> None:
@@ -15,7 +38,7 @@ class GameScreen:
         screen.fill(VERY_DARK_BG)
         
         self.background = PygameImage(screen, 'background.png', image_size=self.width * 2, opacity=50)
-        self.title = PygameText(screen, text="Choose a level", coordinates=(self.width // 2, 30))
+        self.title = PygameText(screen, text="Выберите уровень", coordinates=(self.width // 2, 30))
         
         self.buttons = list()
         self.buttons.append(PygameButton(
@@ -49,17 +72,42 @@ class GameScreen:
                     side, side)
             ))
             
-            # FIXME: Как работает эта хрень? Если передать i в show_level, передастся последняя i
-            if i == 1:
-                call = lambda: show_level(0)
-            elif i == 2:
-                call = lambda: show_level(1)
-            else:
-                call = lambda: show_level(i - 1)
-            self.levels[i - 1].on_clicked = call
-            del call
+            self.levels[i - 1].on_clicked = show_level
+            self.levels[i - 1].args = (i, screen, menu, self)
     
     
     def on_back_clicked(self):
         self.menu.InitUI()
         self.buttons.clear()
+        
+
+class Game:
+    def __init__(self, screen: pygame.Surface, summand_1, summand_2, result, menu, main_obj) -> None:
+        self.screen = screen
+        self.summand_1 = summand_1
+        self.summand_2 = summand_2
+        self.result = result
+        self.menu = menu
+        self.width, self.height = screen.get_size()
+        
+        self.screen.fill(VERY_DARK_BG)
+        main_obj.buttons = list()
+        main_obj.buttons.append(PygameButton(
+            screen=screen,
+            text='В главное меню',
+            background_color=RED,
+            border_color=DARK_BG,
+            text_color=LIGHT,
+            font_size=14,
+            border_size=1,
+            coordinates=(80, 30, 130, 30)
+        ))
+        main_obj.buttons[0].on_clicked = main_obj.on_back_clicked
+        
+        self.title = PygameText(self.screen, text=f"Ваша задача: Получить {result[1]}", coordinates=(self.width // 2, 30), font_size=22, text_color=LIGHT)
+        self.divider = PygameLine(self.screen, (self.width // 2 - 150, 45), (self.width // 2 + 150, 45), GREY, 1)
+        
+        self.right_tube = PygameImageButton(self.screen, 'tube.png', image_size=256, coordinates=(self.width - 128, self.height // 2))
+        self.left_tube = PygameImageButton(self.screen, 'tube.png', image_size=256, coordinates=(128, self.height // 2))
+        main_obj.buttons.append(self.left_tube)
+        main_obj.buttons.append(self.right_tube)

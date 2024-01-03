@@ -42,6 +42,7 @@ class PygameButton:
         ):
         if not on_clicked:
             on_clicked = self.on_click
+        self.args = None
         self.border_radius = border_radius
         self.border_size = border_size
         self.on_clicked = on_clicked
@@ -61,7 +62,10 @@ class PygameButton:
             mouse_position[1] >= self.coordinates[1] - self.coordinates[3] // 2,
             mouse_position[1] <= self.coordinates[1] + self.coordinates[3] // 2
         ]):
-            self.on_clicked()
+            if self.args:
+                self.on_clicked(self.args)
+            else:
+                self.on_clicked()
 
     def on_click(self):
         print('CLICKED')
@@ -117,7 +121,7 @@ class PygameImage:
         self.screen = screen
         self.image_size = image_size
         self.coordinates = coordinates
-        self.image = pygame.transform.scale(pygame.image.load(fullname), (image_size, image_size))
+        self.image = pygame.transform.scale(pygame.image.load(fullname), (self.image_size, self.image_size))
         self.image.set_alpha(opacity)
         self.update()
         
@@ -137,6 +141,11 @@ class PygameImageButton(PygameImage):
             mouse_position[1] <= self.coordinates[1] + self.image_size // 2
         ]):
             self.on_clicked()
-    
+        
     def on_click(self):
-        ...
+        print("CLICKED IMAGE")
+        
+    
+class PygameLine:
+    def __init__(self, screen, start, end, color, width) -> None:
+        pygame.draw.line(screen, color, start, end, width)

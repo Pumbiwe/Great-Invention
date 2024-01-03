@@ -93,6 +93,13 @@ if __name__ == '__main__':
     menu = MainMenu(screen)
     
     while running:
+        try:
+            for tube in game.buttons:
+                if type(tube) is PygameTube:
+                    tube.checker()
+        except:
+            ...
+        
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False

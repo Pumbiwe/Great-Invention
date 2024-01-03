@@ -4,7 +4,7 @@ LIGHT = "#DBDCDD"
 SILVER = "#C9C0BB"
 GREY = "#696972"
 BLACK = "#000"
-TRANSPARENT = "#00000000"
+TRANSPARENT = VERY_DARK_BG
 
 
 YELLOW = "#F8D48B"
@@ -21,7 +21,7 @@ PURPLE = "#7569D0"
 colors = {
     'Белый': LIGHT,
     'Черный': BLACK,
-    'Бесцветый': TRANSPARENT,
+    'Бесцветный': TRANSPARENT,
     
     'Фиолетовый': PURPLE,
     'Желтый': YELLOW,

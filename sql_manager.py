@@ -10,7 +10,8 @@ class Database:
                             id INTEGER PRIMARY KEY AUTOINCREMENT, 
                             summand_1 INTEGER, 
                             summand_2 INTEGER,
-                            result_id INTEGER
+                            result_id INTEGER,
+                            passed    INTEGER
                             );''')
         
         self.cursor.execute("""
@@ -38,6 +39,15 @@ class Database:
             levels.append(level[0])
         return levels
     
+    def get_elements(self):
+        elements = list()
+        for element in self.query('SELECT name FROM elements'):
+            elements.append(element[0])
+        return elements
+    
+    def get_color(self, name):
+        return self.query('SELECT color FROM elements WHERE name = "{}"'.format(name))[0][0]
+    
     def get_element(self, id):
         return self.query('SELECT * FROM elements WHERE id = {}'.format(id))[0]
     
@@ -47,5 +57,5 @@ class Database:
 if __name__ == '__main__':
     
     db = Database()
-    output = db.get_element(1)
+    output = db.get_elements()
     print(output)

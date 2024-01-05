@@ -110,28 +110,72 @@ class PygameButton:
         del coord
 
 
-class PygameImage:
+class PygameImage(pygame.sprite.Sprite):
     def __init__(
         self,
         screen,
         name="chemistry.png",
         coordinates=(0, 0),
         image_size=64,
-        opacity=255
+        opacity=255,
+        movable: tuple[bool, bool] | list[bool, bool] = (False, False),
+        sprites=None,
+        menu=None
     ) -> None:
-        fullname = os.path.join('assets', name)
-        if not os.path.isfile(fullname):
-            return
+        
+        super().__init__()
+        self.menu = menu
+        self.opacity = opacity
+        self.sprites = sprites
+        self.movable = movable
         self.screen = screen
         self.image_size = image_size
         self.coordinates = coordinates
+        self.on_mouse = self.onMouseClicked
+        self.setImage(name)
+    
+    def setImage(self, image):
+        fullname = os.path.join('assets', image)
+        if not os.path.isfile(fullname):
+            return
         self.image = pygame.transform.scale(pygame.image.load(fullname), (self.image_size, self.image_size))
-        self.image.set_alpha(opacity)
+        self.image.set_alpha(self.opacity)
+        self.rect = self.image.get_rect()
         self.update()
-        
+    
+    def onMouseClicked(self, mouse_position):
+        if all([
+            mouse_position[0] >= self.coordinates[0] - self.image_size // 2,
+            mouse_position[0] <= self.coordinates[0] + self.image_size // 2,
+            mouse_position[1] >= self.coordinates[1] - self.image_size // 2,
+            mouse_position[1] <= self.coordinates[1] + self.image_size // 2,
+            self.rect.colliderect(self.screen.get_rect()),
+            mouse_position[0] > self.image_size // 2,
+            mouse_position[0] <= self.screen.get_rect()[2] - self.image_size // 2
+        ]):
+            if self.sprites:
+                self.sprites.clear(self.screen, self.screen)
+                for sprite in self.sprites:
+                    sprite.kill()
+            
+            self.coordinates = (mouse_position[0] if self.movable[0] else self.coordinates[0], 
+                                mouse_position[1] if self.movable[1] else self.coordinates[1])
+            self.update()
+            if self.menu:
+                self.menu.InitUI()
+    
     def update(self):
-        self.screen.blit(self.image, [int(i) - self.image_size // 2 for i in self.coordinates])
+        if self.image:
+            self.rect = self.image.get_rect(center=self.coordinates)
+        else:
+            return
 
+        if self.sprites is not None:
+            self.sprites.add(self)
+            self.sprites.draw(self.screen)
+        else:
+            self.screen.blit(self.image, [int(i) - self.image_size // 2 for i in self.coordinates])
+        
 class PygameImageButton(PygameImage):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
@@ -166,6 +210,7 @@ class PygameTube(PygameImageButton):
             return
         self.main_window = tk.Tk()
         self.main_window.config(width=250, height=75)
+        self.main_window.resizable(False, False)
         self.main_window.title("Выберите элемент")
         self.main_window.eval('tk::PlaceWindow . center')
         

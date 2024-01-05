@@ -22,11 +22,15 @@ def start_game():
     global game
     game = GameScreen(screen, menu)
     menu.buttons.clear()
+    for sprite in menu.sprites:
+        sprite.kill()
+    del menu.main_image
 
 
 class MainMenu:
-    def __init__(self, screen: pygame.Surface) -> None:
+    def __init__(self, screen: pygame.Surface, sprites) -> None:
         self.screen = screen
+        self.sprites = sprites
         self.InitUI()
     
     def InitUI(self):
@@ -68,11 +72,13 @@ class MainMenu:
         ))
         self.buttons[2].on_clicked = show_solubility_table
         
-        main_image = PygameImage(
+        self.main_image = PygameImage(
             self.screen,
             'chemistrylogo.png',
             (width // 2, height // 2),
-            image_size=160
+            image_size=160,
+            movable=(True, False),
+            sprites=self.sprites
         )
     
 
@@ -86,11 +92,12 @@ if __name__ == '__main__':
     
     size = width, height = 720, 500
     screen = pygame.display.set_mode(size)
+    
+    sprites = pygame.sprite.Group()
     running = True
     
     screen.fill(VERY_DARK_BG)
-    
-    menu = MainMenu(screen)
+    menu = MainMenu(screen, sprites)
     
     while running:
         try:
@@ -100,10 +107,20 @@ if __name__ == '__main__':
         except:
             ...
         
+        btn_pressed = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
+            
+            if event.type == pygame.MOUSEMOTION:
+                if pygame.mouse.get_pressed()[0]:
+                    try:
+                        menu.main_image.on_mouse(pygame.mouse.get_pos())
+                    except AttributeError:
+                        ...
+                
             if event.type == pygame.MOUSEBUTTONDOWN:
+                
                 for button in menu.buttons:
                     button.pressed(event.pos)
                 try:

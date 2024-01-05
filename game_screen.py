@@ -3,6 +3,9 @@ from colors import *
 from widgets import *
 from sql_manager import Database
 from tkinter import messagebox
+import time
+import threading
+TROLLING = False
 
 
 def load_level(lvl, db, screen, menu, main_obj):
@@ -83,6 +86,8 @@ class GameScreen:
     
     
     def on_back_clicked(self):
+        global TROLLING
+        TROLLING = False
         self.menu.InitUI()
         self.buttons.clear()
         
@@ -98,9 +103,12 @@ class Game:
         self.width, self.height = screen.get_size()
         self.main_obj = main_obj
         self.screen.fill(VERY_DARK_BG)
-        main_obj.buttons = list()
-        main_obj.buttons.append(PygameButton(
-            screen=screen,
+        self.InitUI()
+    
+    def InitUI(self):
+        self.main_obj.buttons = list()
+        self.main_obj.buttons.append(PygameButton(
+            screen=self.screen,
             text='В главное меню',
             background_color=RED,
             border_color=DARK_BG,
@@ -109,16 +117,32 @@ class Game:
             border_size=1,
             coordinates=(80, 30, 130, 30)
         ))
-        main_obj.buttons[0].on_clicked = main_obj.on_back_clicked
+        self.main_obj.buttons[0].on_clicked = self.main_obj.on_back_clicked
         
-        self.title = PygameText(self.screen, text=f"Ваша задача: Получить {result[1]}", coordinates=(self.width // 2, 30), font_size=22, text_color=LIGHT)
+        self.title = PygameText(self.screen, text=f"Ваша задача: Получить {self.result[1]}", coordinates=(self.width // 2, 30), font_size=22, text_color=LIGHT)
         self.divider = PygameLine(self.screen, (self.width // 2 - 150, 45), (self.width // 2 + 150, 45), GREY, 1)
         
         self.right_tube = PygameTube(self.screen, 'tube.png', image_size=256, coordinates=(self.width - 128, self.height // 2))
         self.left_tube = PygameTube(self.screen, 'tube.png', image_size=256, coordinates=(128, self.height // 2))
         self.right_tube.checker, self.left_tube.checker = self.check_for_victory, self.check_for_victory
-        main_obj.buttons.append(self.left_tube)
-        main_obj.buttons.append(self.right_tube)
+        self.main_obj.buttons.append(self.left_tube)
+        self.main_obj.buttons.append(self.right_tube)
+    
+    def trolling_animation(self):
+        global TROLLING
+        TROLLING = True
+        clock = pygame.time.Clock()
+        self.trollface = PygameImage(self.screen, 'trollface.png', image_size=128, coordinates=(self.width // 2, self.height // 2)) 
+        delay = 0.5
+        while TROLLING:
+            btn = PygameButton(self.screen, coordinates=(self.width // 2, self.height // 2, 128, 128), border_color=VERY_DARK_BG, text_color=VERY_DARK_BG, background_color=VERY_DARK_BG)
+            self.trollface.setImage('trollface1.png')
+            time.sleep(delay)
+            clock.tick(60)
+            btn = PygameButton(self.screen, coordinates=(self.width // 2, self.height // 2, 128, 128), border_color=VERY_DARK_BG, text_color=VERY_DARK_BG, background_color=VERY_DARK_BG)
+            self.trollface.setImage('trollface.png')
+            time.sleep(delay)
+            clock.tick(60)
     
     def check_for_victory(self):
         if any([
@@ -127,9 +151,34 @@ class Game:
         ]):
             self.right_tube.clickable = False
             self.left_tube.clickable = False
-            self.victory_message = PygameText(self.screen, text=f"Вы выйграли!", coordinates=(self.width // 2, self.height // 2))
             for button in self.main_obj.buttons:
                 button.checker = lambda: ...
 
-            Database().query('UPDATE levels SET passed = 1 WHERE id = {}'.format(self.lvl))
-                
+            db = Database()
+            db.query('UPDATE levels SET passed = 1 WHERE id = {}'.format(self.lvl))
+            
+            self.screen.fill(VERY_DARK_BG)
+            
+            try:
+                for btn in self.main_obj.buttons:
+                    if type(btn) not in (PygameImageButton, PygameTube):
+                        if btn.text == 'В главное меню':
+                            self.main_obj.buttons.remove(btn)
+            except Exception as e:
+                print(e)
+            
+            self.main_obj.buttons.append(PygameButton(
+                screen=self.screen,
+                text='В главное меню',
+                background_color=RED,
+                border_color=DARK_BG,
+                text_color=LIGHT,
+                font_size=14,
+                border_size=1,
+                coordinates=(80, 30, 130, 30)
+            ))
+            self.main_obj.buttons[-1].on_clicked = self.main_obj.on_back_clicked
+            score = round(db.get_passed_count() / len(db.get_levels()) * 100)
+            self.victory_message = PygameText(self.screen, text=f"Вы выйграли! Текущий рейтинг: {score}%", coordinates=(self.width // 2, self.width // 8))
+            
+            threading.Thread(target=self.trolling_animation, daemon=True).start()

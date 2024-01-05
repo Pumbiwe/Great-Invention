@@ -51,11 +51,14 @@ class Database:
     def get_element(self, id):
         return self.query('SELECT * FROM elements WHERE id = {}'.format(id))[0]
     
+    def get_passed_count(self):
+        return self.query('SELECT SUM(passed) FROM levels')[0][0]
+    
     def __del__(self):
         self.connection.close()
 
 if __name__ == '__main__':
     
     db = Database()
-    output = db.get_elements()
+    output = db.get_passed_count()
     print(output)
